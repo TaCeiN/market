@@ -73,7 +73,8 @@ async function renderNavbar() {
 
   let links = `
     <a href="index.html" class="navbar__logo">MentorHub</a>
-    <a href="mentors.html" class="navbar__link">Менторы</a>
+    <div class="navbar__links">
+      <a href="mentors.html" class="navbar__link">Менторы</a>
   `;
 
   if (user) {
@@ -82,6 +83,8 @@ async function renderNavbar() {
   } else {
     links += `<a href="login.html" class="btn btn--primary btn--sm">Войти</a>`;
   }
+
+  links += '</div>';
 
   nav.innerHTML = `
     <div class="container navbar">
@@ -102,11 +105,13 @@ function renderFooter() {
 
   footer.innerHTML = `
     <div class="container footer">
-      <p>&copy; 2025 MentorHub. Все права защищены.</p>
-      <div class="footer__links">
-        <a href="mentors.html">Менторы</a>
-        <a href="#">О нас</a>
-        <a href="#">Контакты</a>
+      <div class="footer__inner">
+        <p>&copy; 2026 MentorHub. Все права защищены.</p>
+        <div class="footer__links">
+          <a href="mentors.html">Менторы</a>
+          <a href="#">О нас</a>
+          <a href="#">Контакты</a>
+        </div>
       </div>
     </div>
   `;

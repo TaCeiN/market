@@ -13,7 +13,7 @@
   <section class="section">
     <div class="container">
       <div id="profile-content">
-        <p style="text-align:center;color:var(--gray-400);padding:60px 0;">Загрузка...</p>
+        <p style="text-align:center;color:var(--gray-400);padding:80px 0;">Загрузка...</p>
       </div>
     </div>
   </section>
@@ -32,7 +32,7 @@
       const container = document.getElementById('profile-content');
 
       if (!mentorId) {
-        container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:60px 0;">ID ментора не указан</p>';
+        container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:80px 0;">ID ментора не указан</p>';
         return;
       }
 
@@ -42,7 +42,8 @@
         const reviews = await loadReviews(mentorId);
         renderReviews(reviews, document.getElementById('reviews-container'));
       } catch (e) {
-        container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:60px 0;">Не удалось загрузить профиль ментора</p>';
+        console.error(e);
+        container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:80px 0;">Не удалось загрузить профиль ментора</p>';
       }
     });
   </script>

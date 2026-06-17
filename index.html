@@ -12,11 +12,12 @@
 
   <section class="hero">
     <div class="container">
-      <h1 class="hero__title">Найди своего ментора</h1>
-      <p class="hero__subtitle">Профессиональные менторы помогут тебе достичь целей в карьере и учёбе</p>
+      <div class="hero__badge">✨ Более 100 менторов уже на платформе</div>
+      <h1 class="hero__title">Найди <span>ментора</span><br>для роста</h1>
+      <p class="hero__subtitle">Профессиональные менторы помогут тебе достичь целей в карьере, учёбе и личном развитии</p>
       <div class="hero__actions">
         <a href="mentors.html" class="btn btn--primary btn--lg">Найти ментора</a>
-        <a href="login.html" class="btn btn--outline btn--lg">Стать ментором</a>
+        <a href="login.html?mode=register" class="btn btn--outline btn--lg">Стать ментором</a>
       </div>
     </div>
   </section>
@@ -49,23 +50,39 @@
         if (error) throw error;
 
         if (!data || data.length === 0) {
-          container.innerHTML = '<p style="text-align:center;color:#6b7280;">Менторы пока не добавлены</p>';
+          container.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:60px 0;">Менторы пока не добавлены</p>';
           return;
         }
 
-        container.innerHTML = data.map(m => `
-          <a href="profile.html?id=${m.id}" class="mentor-card">
-            <div class="mentor-card__avatar">${escapeHtml(m.full_name.charAt(0))}</div>
-            <div class="mentor-card__name">${escapeHtml(m.full_name)}</div>
-            <div class="mentor-card__topics">
-              ${(m.topics || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
-            </div>
-            <div class="mentor-card__rating">★ ${m.rating || '0.0'}</div>
-            <div class="mentor-card__price"><span>${m.price_per_hour || '—'} ₽</span> / час</div>
-          </a>
-        `).join('');
+        container.innerHTML = data.map(m => {
+          const name = escapeHtml(m.full_name || 'Ментор');
+          const avatar = name.charAt(0);
+          const topics = (m.topics || []).slice(0, 3);
+          const rating = m.rating || 0;
+          const stars = '★'.repeat(Math.round(rating));
+          
+          return `
+            <a href="profile.html?id=${m.id}" class="mentor-card">
+              <div class="mentor-card__header">
+                <div class="mentor-card__avatar">${avatar}</div>
+                <div>
+                  <div class="mentor-card__name">${name}</div>
+                  <div class="mentor-card__rating">${stars} ${rating.toFixed(1)}</div>
+                </div>
+              </div>
+              <div class="mentor-card__topics">
+                ${topics.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+              </div>
+              <div class="mentor-card__price">
+                <strong>${m.price_per_hour || '—'} ₽</strong>
+                <span>/ час</span>
+              </div>
+            </a>
+          `;
+        }).join('');
       } catch (e) {
-        container.innerHTML = '<p style="text-align:center;color:#6b7280;">Не удалось загрузить менторов</p>';
+        console.error(e);
+        container.innerHTML = '<p style="text-align:center;color:var(--gray-400);padding:60px 0;">Не удалось загрузить менторов</p>';
       }
     });
   </script>

@@ -13,11 +13,26 @@ async function loadReviews(mentorId) {
   const client = getSupabase();
   const { data, error } = await client
     .from('reviews')
-    .select('*, profiles!reviews_student_id_fkey(full_name)')
+    .select('*')
     .eq('mentor_id', mentorId)
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data || [];
+
+  if (!data || data.length === 0) return [];
+
+  const studentIds = [...new Set(data.map(r => r.student_id))];
+  const { data: students } = await client
+    .from('profiles')
+    .select('id, full_name')
+    .in('id', studentIds);
+
+  const studentsMap = {};
+  (students || []).forEach(s => studentsMap[s.id] = s.full_name);
+
+  return data.map(r => ({
+    ...r,
+    profiles: { full_name: studentsMap[r.student_id] || 'Ученик' }
+  }));
 }
 
 async function getAvailableSlots(mentorId, date) {
@@ -32,7 +47,15 @@ async function getAvailableSlots(mentorId, date) {
     .eq('day_of_week', dayOfWeek)
     .eq('is_active', true);
 
-  if (!schedule || schedule.length === 0) return [];
+  if (!schedule || schedule.length === 0) {
+    const defaultSlots = [];
+    for (let h = 9; h <= 20; h++) {
+      const timeStr = `${String(h).padStart(2, '0')}:00:00`;
+      const display = `${String(h).padStart(2, '0')}:00`;
+      defaultSlots.push({ time: timeStr, display, booked: false });
+    }
+    return defaultSlots;
+  }
 
   const { data: bookings } = await client
     .from('bookings')
@@ -59,49 +82,58 @@ async function getAvailableSlots(mentorId, date) {
 }
 
 function renderProfile(mentor, container) {
-  const avatarChar = mentor.full_name ? mentor.full_name.charAt(0) : '?';
+  const name = escapeHtml(mentor.full_name || 'Ментор');
+  const avatar = name.charAt(0);
   const topics = (mentor.topics || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
   const today = new Date().toISOString().split('T')[0];
+  const rating = mentor.rating || 0;
+  const stars = renderStars(rating);
 
   container.innerHTML = `
-    <div class="profile-header">
-      <div class="profile-header__avatar">${avatarChar}</div>
-      <div class="profile-header__info">
-        <h1>${escapeHtml(mentor.full_name)}</h1>
-        <div class="mentor-card__rating" style="margin:8px 0;">
-          ${renderStars(mentor.rating || 0)} ${mentor.rating || '0.0'}
-          <span style="color:var(--gray-400);font-weight:400;margin-left:8px;">
-            (${mentor.reviews_count || 0} отзывов)
-          </span>
-        </div>
-        <div style="margin-bottom:12px;">${topics}</div>
-        <div style="color:var(--gray-900);font-weight:700;font-size:1.1rem;margin-bottom:8px;">
-          ${mentor.price_per_hour || '—'} ₽ / час
-        </div>
-        ${mentor.bio ? `<p style="color:var(--gray-600);line-height:1.6;margin-bottom:16px;">${escapeHtml(mentor.bio)}</p>` : ''}
-      </div>
-    </div>
-
-    <div class="profile-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
-      <div>
-        <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:16px;">Запись на консультацию</h2>
-        <div class="form-group">
-          <label for="booking-date">Дата</label>
-          <input type="date" id="booking-date" min="${today}" value="${today}">
-        </div>
-        <div id="slots-container" class="slots-grid"></div>
-        <form id="booking-form" style="display:none;">
-          <input type="hidden" id="selected-time">
-          <div class="form-group">
-            <label for="booking-desc">Описание запроса</label>
-            <textarea id="booking-desc" rows="3" placeholder="Опишите, чем вам нужна помощь..."></textarea>
+    <div class="profile-layout">
+      <div class="profile-main">
+        <div class="profile-card">
+          <div class="profile-header">
+            <div class="profile-header__avatar">${avatar}</div>
+            <div class="profile-header__info">
+              <h1>${name}</h1>
+              <div class="profile-header__rating">
+                <span class="stars">${stars} ${rating.toFixed(1)}</span>
+                <span class="count">(${mentor.reviews_count || 0} отзывов)</span>
+              </div>
+            </div>
           </div>
-          <button type="submit" class="btn btn--primary btn--lg" style="width:100%;">Записаться</button>
-        </form>
+          <div class="profile-topics">${topics}</div>
+          ${mentor.bio ? `<p class="profile-bio">${escapeHtml(mentor.bio)}</p>` : ''}
+          <div class="profile-price">
+            <strong>${mentor.price_per_hour || '—'} ₽</strong>
+            <span>/ час</span>
+          </div>
+        </div>
+
+        <div class="reviews-section">
+          <h3>Отзывы</h3>
+          <div id="reviews-container"></div>
+        </div>
       </div>
-      <div>
-        <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:16px;">Отзывы</h2>
-        <div id="reviews-container"></div>
+
+      <div class="booking-sidebar">
+        <div class="booking-card">
+          <h3>Записаться на консультацию</h3>
+          <div class="form-group">
+            <label for="booking-date">Дата</label>
+            <input type="date" id="booking-date" min="${today}" value="${today}">
+          </div>
+          <div id="slots-container" class="slots-grid"></div>
+          <form id="booking-form" style="display:none;">
+            <input type="hidden" id="selected-time">
+            <div class="form-group">
+              <label for="booking-desc">Описание запроса</label>
+              <textarea id="booking-desc" rows="3" placeholder="Опишите, чем вам нужна помощь..."></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary" style="width:100%;">Записаться</button>
+          </form>
+        </div>
       </div>
     </div>
   `;
@@ -120,7 +152,7 @@ function renderProfile(mentor, container) {
 
 function renderReviews(reviews, container) {
   if (!reviews || reviews.length === 0) {
-    container.innerHTML = '<p style="color:var(--gray-400);">Пока нет отзывов</p>';
+    container.innerHTML = '<p style="color:var(--gray-400);padding:20px 0;">Пока нет отзывов</p>';
     return;
   }
   container.innerHTML = reviews.map(r => `
@@ -136,7 +168,7 @@ function renderReviews(reviews, container) {
 
 function renderTimeSlots(slots, container) {
   if (!slots || slots.length === 0) {
-    container.innerHTML = '<p style="color:var(--gray-400);grid-column:1/-1;">Нет доступных слотов на эту дату</p>';
+    container.innerHTML = '<p style="color:var(--gray-400);grid-column:1/-1;text-align:center;padding:20px 0;">Нет доступных слотов на эту дату</p>';
     return;
   }
   container.innerHTML = slots.map(s => `

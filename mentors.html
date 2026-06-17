@@ -12,11 +12,11 @@
 
   <section class="section">
     <div class="container">
-      <h2 class="section__title">Найди ментора</h2>
+      <h1 class="section__title">Найди ментора</h1>
       <p class="section__subtitle">Выбери специалиста по теме и бюджету</p>
 
       <div class="search-bar">
-        <input type="text" id="search-input" class="search-bar__input" placeholder="Поиск по имени или теме...">
+        <input type="text" id="search-input" class="search-bar__input" placeholder="🔍 Поиск по имени или теме...">
         <select id="subject-filter" class="search-bar__select">
           <option value="">Все темы</option>
           <option value="Программирование">Программирование</option>
@@ -52,7 +52,8 @@
         const mentors = await loadMentors();
         renderMentorCards(mentors, grid);
       } catch (e) {
-        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gray-500);">Не удалось загрузить менторов</p>';
+        console.error(e);
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gray-500);padding:60px 0;">Не удалось загрузить менторов</p>';
       }
     }
 
