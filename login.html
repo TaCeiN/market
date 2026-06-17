@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MentorHub — Вход</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav id="navbar"></nav>
+
+  <div class="auth-card">
+    <h1 id="auth-title" class="auth-card__title">Вход</h1>
+
+    <button id="google-btn" class="btn btn--outline" style="width: 100%; margin-bottom: 4px;">
+      Войти через Google
+    </button>
+
+    <div class="auth-card__divider"><span>или</span></div>
+
+    <form id="auth-form">
+      <div id="full-name-group" class="form-group" style="display: none;">
+        <label for="full_name">Полное имя</label>
+        <input type="text" id="full_name" name="full_name" placeholder="Иван Иванов" required>
+      </div>
+
+      <div id="role-group" class="form-group" style="display: none;">
+        <label for="role">Роль</label>
+        <select id="role" name="role" required>
+          <option value="">Выберите роль</option>
+          <option value="mentor">Ментор</option>
+          <option value="student">Ученик</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="you@example.com" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" placeholder="Минимум 6 символов" required minlength="6">
+      </div>
+
+      <button type="submit" id="auth-submit" class="btn btn--primary" style="width: 100%;">Войти</button>
+    </form>
+
+    <div id="auth-toggle" class="auth-card__toggle">
+      Нет аккаунта? <a href="login.html?mode=register">Зарегистрироваться</a>
+    </div>
+  </div>
+
+  <footer id="footer"></footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initAuthForm();
+    });
+  </script>
+</body>
+</html>

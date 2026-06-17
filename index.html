@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MentorHub — Найди своего ментора</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav id="navbar"></nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero__title">Найди своего ментора</h1>
+      <p class="hero__subtitle">Профессиональные менторы помогут тебе достичь целей в карьере и учёбе</p>
+      <div class="hero__actions">
+        <a href="mentors.html" class="btn btn--primary btn--lg">Найти ментора</a>
+        <a href="login.html" class="btn btn--outline btn--lg">Стать ментором</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="section__title">Популярные менторы</h2>
+      <p class="section__subtitle">Лучшие специалисты, готовые поделиться опытом</p>
+      <div id="featured-mentors" class="cards-grid"></div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('featured-mentors');
+      try {
+        const client = getSupabase();
+        const { data, error } = await client
+          .from('profiles')
+          .select('*')
+          .eq('role', 'mentor')
+          .order('rating', { ascending: false })
+          .limit(6);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p style="text-align:center;color:#6b7280;">Менторы пока не добавлены</p>';
+          return;
+        }
+
+        container.innerHTML = data.map(m => `
+          <a href="profile.html?id=${m.id}" class="mentor-card">
+            <div class="mentor-card__avatar">${escapeHtml(m.full_name.charAt(0))}</div>
+            <div class="mentor-card__name">${escapeHtml(m.full_name)}</div>
+            <div class="mentor-card__topics">
+              ${(m.topics || []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+            </div>
+            <div class="mentor-card__rating">★ ${m.rating || '0.0'}</div>
+            <div class="mentor-card__price"><span>${m.price_per_hour || '—'} ₽</span> / час</div>
+          </a>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = '<p style="text-align:center;color:#6b7280;">Не удалось загрузить менторов</p>';
+      }
+    });
+  </script>
+</body>
+</html>

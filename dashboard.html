@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Кабинет — MentorHub</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 32px;
+      padding: 40px 0;
+    }
+    .dashboard-sidebar {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+    }
+    .sidebar-profile {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .sidebar-profile__avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin: 0 auto 12px;
+    }
+    .sidebar-profile__name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .sidebar-profile__role {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 24px;
+    }
+    .sidebar-nav a {
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      color: var(--gray-600);
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+    .sidebar-nav a:hover {
+      background: var(--gray-100);
+      color: var(--gray-900);
+    }
+    .sidebar-nav a.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .plan-card {
+      background: var(--gray-50);
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      text-align: center;
+    }
+    .plan-card--pro {
+      background: linear-gradient(135deg, var(--primary-light) 0%, #ede9fe 100%);
+      border-color: var(--primary);
+    }
+    .plan-card__title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .plan-card__desc {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-bottom: 8px;
+    }
+    .booking-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .booking-card__info {
+      flex: 1;
+      min-width: 200px;
+    }
+    .booking-card__name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+    .booking-card__meta {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+    .booking-card__desc {
+      font-size: 0.85rem;
+      color: var(--gray-600);
+      line-height: 1.5;
+    }
+    .booking-card__status {
+      flex-shrink: 0;
+    }
+    .booking-card__actions {
+      width: 100%;
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .status-badge--warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .status-badge--success {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .status-badge--danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--gray-400);
+    }
+    .dashboard-main {
+      min-width: 0;
+    }
+    @media (max-width: 768px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+        padding: 24px 0;
+      }
+      .dashboard-sidebar {
+        position: static;
+      }
+      .booking-card {
+        flex-direction: column;
+      }
+      .booking-card__actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav id="navbar"></nav>
+
+  <section class="section">
+    <div class="container">
+      <div id="dashboard-content">
+        <p style="text-align:center;color:var(--gray-400);padding:60px 0;">Загрузка...</p>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const data = await loadDashboard();
+        renderDashboard(data, document.getElementById('dashboard-content'));
+      } catch (e) {
+        document.getElementById('dashboard-content').innerHTML =
+          '<p style="text-align:center;color:var(--danger);padding:60px 0;">Не удалось загрузить кабинет</p>';
+      }
+    });
+  </script>
+</body>
+</html>

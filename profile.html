@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль ментора — MentorHub</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav id="navbar"></nav>
+
+  <section class="section">
+    <div class="container">
+      <div id="profile-content">
+        <p style="text-align:center;color:var(--gray-400);padding:60px 0;">Загрузка...</p>
+      </div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/search.js"></script>
+  <script src="js/profile.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const params = new URLSearchParams(window.location.search);
+      const mentorId = params.get('id');
+      const container = document.getElementById('profile-content');
+
+      if (!mentorId) {
+        container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:60px 0;">ID ментора не указан</p>';
+        return;
+      }
+
+      try {
+        const mentor = await loadProfile(mentorId);
+        renderProfile(mentor, container);
+        const reviews = await loadReviews(mentorId);
+        renderReviews(reviews, document.getElementById('reviews-container'));
+      } catch (e) {
+        container.innerHTML = '<p style="text-align:center;color:var(--danger);padding:60px 0;">Не удалось загрузить профиль ментора</p>';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Менторы — MentorHub</title>
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <nav id="navbar"></nav>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="section__title">Найди ментора</h2>
+      <p class="section__subtitle">Выбери специалиста по теме и бюджету</p>
+
+      <div class="search-bar">
+        <input type="text" id="search-input" class="search-bar__input" placeholder="Поиск по имени или теме...">
+        <select id="subject-filter" class="search-bar__select">
+          <option value="">Все темы</option>
+          <option value="Программирование">Программирование</option>
+          <option value="Дизайн">Дизайн</option>
+          <option value="Маркетинг">Маркетинг</option>
+          <option value="Бизнес">Бизнес</option>
+          <option value="Математика">Математика</option>
+          <option value="Языки">Языки</option>
+          <option value="Музыка">Музыка</option>
+        </select>
+        <select id="sort-filter" class="search-bar__select">
+          <option value="rating">По рейтингу</option>
+          <option value="price_asc">Дешевле</option>
+          <option value="price_desc">Дороже</option>
+          <option value="new">Новые</option>
+        </select>
+      </div>
+
+      <div id="mentors-grid" class="cards-grid"></div>
+    </div>
+  </section>
+
+  <footer id="footer"></footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/search.js"></script>
+  <script>
+    async function refreshMentors() {
+      const grid = document.getElementById('mentors-grid');
+      try {
+        const mentors = await loadMentors();
+        renderMentorCards(mentors, grid);
+      } catch (e) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--gray-500);">Не удалось загрузить менторов</p>';
+      }
+    }
+
+    let searchTimeout;
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        setFilter('search', e.target.value.trim());
+        refreshMentors();
+      }, 300);
+    });
+
+    document.getElementById('subject-filter').addEventListener('change', (e) => {
+      setFilter('subject', e.target.value);
+      refreshMentors();
+    });
+
+    document.getElementById('sort-filter').addEventListener('change', (e) => {
+      setFilter('sortBy', e.target.value);
+      refreshMentors();
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      refreshMentors();
+    });
+  </script>
+</body>
+</html>
